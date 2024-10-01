@@ -1,11 +1,11 @@
-const express  = require('express');
+const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const dotenv = require('dotenv')
 const userRoutes = require('./src/Routes/user.Routes')
 const errorHandler = require('./src/Middlewares/errorHandler')
-
+const cookieParser = require('cookie-parser')
 
 
 const app = express();
@@ -13,16 +13,14 @@ dotenv.config();
 
 // MIDDLEWARES
 app.use(cors())
+
 app.use(express.json());
+app.use(cookieParser())
 app.use(express.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 //Routes
 app.use("/api/users", userRoutes)
-
-app.get("/", (req,res)=>{
-    res.send("Home Page")  
-})
 
 app.use(errorHandler)
 
