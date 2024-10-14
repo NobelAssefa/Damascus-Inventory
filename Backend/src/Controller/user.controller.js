@@ -3,6 +3,8 @@ const AsyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
+const Token = require('../Models/token.model')
+const sendEmail = require('../Utils/sendEmail')
 
 
 const generateToken = (id) => {
@@ -222,8 +224,39 @@ const resetPassword = AsyncHandler(async (req, res) => {
     const resetToken = crypto.randomBytes(32).toString("hex") + user._id;
 
     const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex")
-    console.log(hashedToken);
-    res.status(200).send("forget password")
+
+    await new Token({
+        userId: user._id,
+        token:hashedToken,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 30 * (60 * 1000) // Thirty Minutes
+    }).save()
+
+    const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`
+    const message = `
+        <h1>Hello</h1>
+        <p>You requested for a password reset</p>
+        <p><Please use the link below to reset a password/p>
+        <p>The reset link is only valid for 30 minutes</p>
+        <a href = ${resetUrl} clicktracking = false>${resetUrl}</a>
+        <p>Regards.....</p>
+        <p>DAMASCUS</p>
+    `;
+
+    const subject = "Password reset request"
+    const send_to = user.email;
+    const sent_from = process.env.EMAIL_USER;
+
+    try{
+        await sendEmail(subject,message,send_to,sent_from)
+        res.status(200).json({success:true, message:"Reset Email sent"})
+
+    }catch{
+        res.status(500);
+        throw new Error("Email not sent please try again!!");
+
+    }
+
     
 
 })
