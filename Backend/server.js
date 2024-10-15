@@ -6,7 +6,7 @@ const dotenv = require('dotenv')
 const userRoutes = require('./src/Routes/user.Routes')
 const errorHandler = require('./src/Middlewares/errorHandler')
 const cookieParser = require('cookie-parser')
-
+const productRoutes = require("./src/Routes/product.Routes")
 
 const app = express();
 dotenv.config();
@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 
 //Routes
 app.use("/api/users", userRoutes)
-
+app.use("/api/products", productRoutes)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000;
