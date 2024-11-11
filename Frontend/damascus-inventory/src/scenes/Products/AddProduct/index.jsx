@@ -8,57 +8,75 @@ import Header from "../../../components/Header";
 import { Link, useNavigate } from "react-router-dom";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { tokens } from "../../../theme";
+import { useState } from "react";
 const initialValues = {
-    firstName: "",
-    lastName: "",
-    email: "",
-    contact: "",
-    address1: "",
-    address2: "",
+    name: "",
+    stock: "",
+    sku: "",
+    category: "",
+    quantity: "",
+    price: "",
+    description: "",
+    image: "",
 };
 const PhoneRegExp = /^((\+[1-9]{1,4}[ -]?)|(\([0-9]{2,3}\)[ -]?)|([0-9]{2,4})[ -]?)*?[0-9]{3,4}[ -]?[0-9]{3,4}$/;
 
 const checkoutSchema = yup.object().shape({
-    firstName: yup.string().required("required"),
-    lastName: yup.string().required("required"),
-    email: yup.string().email("invalid email").required("required"),
-    contact: yup.string().matches(PhoneRegExp, "Invalid Contact address").required("required"),
-    address1: yup.string().required("required"),
-    address2: yup.string().required("required"),
+    name: yup.string().required("required"),
+    stock: yup.string().required("required"),
+    sku: yup.string().required("required"),
+    category: yup.string().matches(PhoneRegExp, "Invalid Contact address").required("required"),
+    quantity: yup.string().required("required"),
+    price: yup.string().required("required"),
+    description: yup.string().required("required"),
+    image: yup.string(),
 
 })
 
 const AddProduct = () => {
     const isNonMobile = useMediaQuery("(min-width:600px)");
     const theme = useTheme()
-    const colors = tokens(theme.palette.mode) 
+    const colors = tokens(theme.palette.mode)
     const navigate = useNavigate();
+    const [product, setProduct] = useState({
+        
+    })
     const handelFormSubmit = (value) => {
+        fetch("http://localhost:5000/api/products", {
+            method: "POST",
+            headers: {
+                "Content-type": "application/json",
+            },
+            body: JSON.stringify(product),
+        })
+            .then((result) => {
+                alert("Product Added")
+
+            }).catch((err)=>console.log(err));
+            
         console.log(value);
         navigate("/users")
-
-
     }
 
     return (
         <Box m="20px">
             <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Link 
-                to="/products"
-                style={{ textDecoration: "none", color: "inherit" }}>
-                <Box display="flex"
-                    justifyContent="center"
-                    p="5px"
-                    backgroundColor={colors.greenAccent[500]}
-                    borderRadius="4px">
-                    <ArrowBackIcon textDecoration = "none" fontSize="medium" />
-                </Box>
+                <Link
+                    to="/products"
+                    style={{ textDecoration: "none", color: "inherit" }}>
+                    <Box display="flex"
+                        justifyContent="center"
+                        p="5px"
+                        backgroundColor={colors.greenAccent[500]}
+                        borderRadius="4px">
+                        <ArrowBackIcon textDecoration="none" fontSize="medium" />
+                    </Box>
                 </Link>
-                
+
 
             </Box>
             <Box mt="20px">
-            <Header  title="Create product" subtitle="creating new product" />
+                <Header title="Create product" subtitle="creating new product" />
             </Box>
             <Formik
                 onSubmit={handelFormSubmit}
@@ -82,13 +100,28 @@ const AddProduct = () => {
                                 fullwidth
                                 variant="filled"
                                 type="text"
-                                label="First Name"
+                                label="Name"
                                 onBlur={handleBlur}
                                 onChange={handleChange}
-                                value={values.firstName}
-                                name="firstName"
-                                error={!!touched && !!errors.firstName}
-                                helperText={touched.firstName && errors.firstName}
+                                value={values.name}
+                                name="name"
+                                error={!!touched && !!errors.name}
+                                helperText={touched.name && errors.name}
+                                sx={{ gridColumn: "span 2" }}
+
+                            />
+
+                            <TextField
+                                fullwidth
+                                variant="filled"
+                                type="text"
+                                label="Stock"
+                                onBlur={handleBlur}
+                                onChange={handleChange}
+                                value={values.stock}
+                                name="stock"
+                                error={!!touched && !!errors.stock}
+                                helperText={touched.stock && errors.stock}
                                 sx={{ gridColumn: "span 2" }}
 
                             />
@@ -96,13 +129,13 @@ const AddProduct = () => {
                                 fullwidth
                                 variant="filled"
                                 type="text"
-                                label="Last Name"
+                                label="Category"
                                 onBlur={handleBlur}
                                 onChange={handleChange}
-                                value={values.lastName}
-                                name="lastName"
-                                error={!!touched && !!errors.lastName}
-                                helperText={touched.lastName && errors.lastName}
+                                value={values.category}
+                                name="category"
+                                error={!!touched && !!errors.category}
+                                helperText={touched.category && errors.category}
                                 sx={{ gridColumn: "span 2" }}
 
                             />
@@ -110,57 +143,45 @@ const AddProduct = () => {
                                 fullwidth
                                 variant="filled"
                                 type="text"
-                                label="Email"
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                value={values.email}
-                                name="email"
-                                error={!!touched && !!errors.email}
-                                helperText={touched.email && errors.email}
-                                sx={{ gridColumn: "span 2" }}
-
-                            />
-                            <TextField
-                                fullwidth
-                                variant="filled"
-                                type="text"
-                                label="Contact"
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                value={values.contact}
-                                name="contact"
-                                error={!!touched && !!errors.contact}
-                                helperText={touched.contact && errors.contact}
-                                sx={{ gridColumn: "span 2" }}
-
-                            />
-                            <TextField
-                                fullwidth
-                                variant="filled"
-                                type="text"
-                                label="Address 1"
+                                label="Quantity"
                                 onBlur={handleBlur}
                                 onChange={handleChange}
                                 value={values.address1}
-                                name="address1"
-                                error={!!touched && !!errors.address1}
-                                helperText={touched.address1 && errors.address1}
+                                name="quantity"
+                                error={!!touched && !!errors.quantity}
+                                helperText={touched.quantity && errors.quantity}
                                 sx={{ gridColumn: "span 4" }}
                             />
                             <TextField
                                 fullwidth
                                 variant="filled"
                                 type="text"
-                                label="Address 2"
+                                label="Price"
                                 onBlur={handleBlur}
                                 onChange={handleChange}
-                                value={values.address2}
-                                name="address2"
-                                error={!!touched && !!errors.address2}
-                                helperText={touched.address2 && errors.address2}
+                                value={values.price}
+                                name="price"
+                                error={!!touched && !!errors.price}
+                                helperText={touched.price && errors.price}
                                 sx={{ gridColumn: "span 4" }}
 
                             />
+                            <TextField
+                                fullwidth
+                                variant="filled"
+                                type="text"
+                                label="Description"
+                                onBlur={handleBlur}
+                                onChange={handleChange}
+                                value={values.description}
+                                name="description`"
+                                error={!!touched && !!errors.description}
+                                helperText={touched.description && errors.description}
+                                sx={{ gridColumn: "span 4" }}
+
+                            />
+
+
 
 
 
@@ -168,7 +189,7 @@ const AddProduct = () => {
 
                         <Box display="flex" justifyContent="end" mt="10px">
 
-                            <Button style={{color:"inherit"}} type="submit" variant="contained" color="secondary" > Create Product</Button>
+                            <Button style={{ color: "inherit" }} type="submit" variant="contained" color="secondary" > Create Product</Button>
                         </Box>
 
                     </form>

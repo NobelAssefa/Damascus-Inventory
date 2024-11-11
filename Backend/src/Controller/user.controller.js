@@ -54,9 +54,9 @@ const registerUser = AsyncHandler(
         })
 
         if (user) {
-            const { _id, name, email, photo, phone, bio } = user
+            const { _id, name, email, photo, phone, bio,isAdmin } = user
             res.status(201).json({
-                _id, name, email, photo, phone, bio, token
+                _id, name, email, photo, phone, bio, isAdmin,token
             })
         } else {
             res.status(400);
@@ -130,6 +130,24 @@ const logout = AsyncHandler(async (req, res) => {
 
 
 })
+
+
+//GET USER All User
+const getAllUsers = AsyncHandler(
+    async (req, res) => {
+        const users = await User.find(); // 'users' is an array of user objects
+        if (users) {
+            const usersData = users.map(user => {
+                const { _id, name, email, photo, phone, bio } = user;
+                return { _id, name, email, photo, phone, bio };
+            });
+            res.status(201).json(usersData);
+        } else {
+            res.status(400);
+            throw new Error("Something went wrong");
+        }
+    }
+);
 
 
 //GET USER PROFILE
@@ -265,11 +283,12 @@ const resetPassword = AsyncHandler(async (req, res) => {
 
 module.exports = {
     registerUser,
-    login,
-    logout,
-    getProfile,
+    login,  
+    logout,            
+    getProfile,      
     loggedIn,
     updateProfile,
     changePassword,
-    resetPassword
+    resetPassword,
+    getAllUsers
 };

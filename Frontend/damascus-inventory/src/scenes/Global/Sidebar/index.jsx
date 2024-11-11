@@ -205,7 +205,7 @@ const Sidebar = () => {
                         />
                         <Item
                             title="Timeline"
-                            to='/timeline'
+                            to='/linechart'
                             icon={<TimelineOutlinedIcon />}
                             selected={selected}
                             setSelected={setSelected}
@@ -221,7 +221,7 @@ const Sidebar = () => {
                         </Typography>
                         <Item
                             title="Map"
-                            to='/map'
+                            to='/geomap'
                             icon={<MapOutlinedIcon />}
                             selected={selected}
                             setSelected={setSelected}

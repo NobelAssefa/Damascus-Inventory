@@ -10,6 +10,13 @@ import Products from "./scenes/Products";
 import AddUser from "./scenes/Users/AddUser";
 import AddProduct from "./scenes/Products/AddProduct";
 import Calendar from "./scenes/Calendar";
+import Barchart from "./scenes/Chart/BarChart";
+import Piechart from "./scenes/Chart/PieChart";
+import Linechart from "./scenes/Chart/LineChart";
+import Geomap from "./scenes/Chart/Geomap";
+
+
+
 function App() {
   const [theme, coloMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
@@ -29,6 +36,12 @@ function App() {
               <Route path="/createUser" element = {<AddUser/>}/>
               <Route path="/createProduct" element = {<AddProduct/>}/>
               <Route path="/calendar" element = {<Calendar/>}/>
+              <Route path="/barchart" element = {<Barchart/>}/>
+              <Route path="/piechart" element = {<Piechart/>}/>
+              <Route path="/linechart" element = {<Linechart/>}/>
+              <Route path="/geomap" element = {<Geomap/>}/>
+              
+             
 
 
             </Routes>
@@ -38,5 +51,6 @@ function App() {
     </colorModeContext.Provider>
   );
 }
+
 
 export default App;
