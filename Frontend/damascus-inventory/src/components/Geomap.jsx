@@ -84,7 +84,7 @@ const GeoMap = ({ isDashboard = false }) => {
         <div
           style={{
             background: colors.primary[500], // Tooltip background color
-            color: colors.greenAccent[500],         // Tooltip text color
+            color: colors.greenAccent[500], // Tooltip text color
             padding: "5px 10px",
             borderRadius: "4px",
             fontSize: "14px",

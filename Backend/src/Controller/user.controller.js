@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const Token = require('../Models/token.model')
 const sendEmail = require('../Utils/sendEmail')
+const { access } = require('fs')
 
 
 const generateToken = (id) => {
@@ -54,9 +55,9 @@ const registerUser = AsyncHandler(
         })
 
         if (user) {
-            const { _id, name, email, photo, phone, bio,isAdmin } = user
+            const { _id, name, email, photo, phone, bio, isAdmin } = user
             res.status(201).json({
-                _id, name, email, photo, phone, bio, isAdmin,token
+                _id, name, email, photo, phone, bio, isAdmin, token
             })
         } else {
             res.status(400);
@@ -103,9 +104,9 @@ const login = AsyncHandler(
         // check if email and password is correct
 
         if (user && passwordExists) {
-            const { _id, name, email, photo, phone, bio } = user
+            const { _id, name, email, photo, phone, bio, password } = user
             res.status(201).json({
-                _id, name, email, photo, phone, bio, token
+                _id, name, email, photo, phone, bio, token,password
             })
         }
         else {
@@ -114,7 +115,59 @@ const login = AsyncHandler(
         }
 
     }
-)
+);
+
+
+
+const refereshToken = AsyncHandler(
+    async (req, res) => {
+        const refereshToken = req.cookies.token;
+        if (!refereshToken) {
+            res.status(401);
+            throw new Error("Refersh login not found! Please login again");
+        }
+
+        try {
+            const decoded = jwt.verify(refereshToken, process.env.JWT_SECRET)
+            const user = await User.findById(decoded.id).select("-password");
+            if (!user) {
+                res.status(401);
+                throw new Error("User not found");
+            }
+
+            const newAccessToken = jwt.sign(
+                { id: user._id },
+                process.env.JWT_SECRET,
+                { expiresIn: "1d" }
+            )
+
+            const newRefreshToken = jwt.sign(
+                { id: user._id },
+                process.env.JWT_SECRET,
+                { expiresIn: "7d" } // Set desired refresh token expiration
+            );
+
+
+            res.cookie("token", newAccessToken, {
+                path: "/",
+                httpOnly: true,
+                expires: new Date(Date.now() + 1000 * 86400 * 7),
+                sameSite: "none",
+                secure: true,
+            });
+
+            res.status(200).json({
+                access: newAccessToken,
+            });
+
+        } catch (error) {
+
+            res.status(403);
+            throw new Error("Invalid or expired refresh token. Please login again")
+        }
+
+
+    })
 
 //LOGOUT
 const logout = AsyncHandler(async (req, res) => {
@@ -231,9 +284,9 @@ const changePassword = AsyncHandler(async (req, res) => {
     }
 });
 const resetPassword = AsyncHandler(async (req, res) => {
-    const {email} = req.body
-    const user  = await User.findOne({email})
-    if(!user){
+    const { email } = req.body
+    const user = await User.findOne({ email })
+    if (!user) {
         res.status(400)
         throw new Error("user not found!!")
     }
@@ -245,7 +298,7 @@ const resetPassword = AsyncHandler(async (req, res) => {
 
     await new Token({
         userId: user._id,
-        token:hashedToken,
+        token: hashedToken,
         createdAt: Date.now(),
         expiresAt: Date.now() + 30 * (60 * 1000) // Thirty Minutes
     }).save()
@@ -265,17 +318,17 @@ const resetPassword = AsyncHandler(async (req, res) => {
     const send_to = user.email;
     const sent_from = process.env.EMAIL_USER;
 
-    try{
-        await sendEmail(subject,message,send_to,sent_from)
-        res.status(200).json({success:true, message:"Reset Email sent"})
+    try {
+        await sendEmail(subject, message, send_to, sent_from)
+        res.status(200).json({ success: true, message: "Reset Email sent" })
 
-    }catch{
+    } catch {
         res.status(500);
         throw new Error("Email not sent please try again!!");
 
     }
 
-    
+
 
 })
 
@@ -283,12 +336,13 @@ const resetPassword = AsyncHandler(async (req, res) => {
 
 module.exports = {
     registerUser,
-    login,  
-    logout,            
-    getProfile,      
+    login,
+    logout,
+    getProfile,
     loggedIn,
     updateProfile,
     changePassword,
     resetPassword,
-    getAllUsers
+    getAllUsers,
+    refereshToken
 };

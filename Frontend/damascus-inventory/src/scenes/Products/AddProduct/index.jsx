@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { tokens } from "../../../theme";
 import { useState } from "react";
+import { createProducts } from '../../../config/apiCalls/productApiCall'
 const initialValues = {
     name: "",
     stock: "",
@@ -22,14 +23,13 @@ const initialValues = {
 const PhoneRegExp = /^((\+[1-9]{1,4}[ -]?)|(\([0-9]{2,3}\)[ -]?)|([0-9]{2,4})[ -]?)*?[0-9]{3,4}[ -]?[0-9]{3,4}$/;
 
 const checkoutSchema = yup.object().shape({
-    name: yup.string().required("required"),
-    stock: yup.string().required("required"),
-    sku: yup.string().required("required"),
-    category: yup.string().matches(PhoneRegExp, "Invalid Contact address").required("required"),
-    quantity: yup.string().required("required"),
-    price: yup.string().required("required"),
-    description: yup.string().required("required"),
-    image: yup.string(),
+    name: yup.string().required("Required"),
+    stock: yup.number().required("Required"),
+    category: yup.string().required("Required"),
+    quantity: yup.number().required("Required"),
+    price: yup.number().required("Required"),
+    description: yup.string().required("Required"),
+  
 
 })
 
@@ -38,24 +38,25 @@ const AddProduct = () => {
     const theme = useTheme()
     const colors = tokens(theme.palette.mode)
     const navigate = useNavigate();
-    const [product, setProduct] = useState({
-        
-    })
-    const handelFormSubmit = (value) => {
-        fetch("http://localhost:5000/api/products", {
-            method: "POST",
-            headers: {
-                "Content-type": "application/json",
-            },
-            body: JSON.stringify(product),
-        })
-            .then((result) => {
-                alert("Product Added")
+    const [loading, setLoading] = useState(false);
+   
+    const handelFormSubmit = async (values, { resetForm }) => {
+        setLoading(true);
+        try {
+            const response = await createProducts(values);
+            if (response) {
+                alert("Added successfully!")
+                resetForm();
+                navigate('/products')
+            }
 
-            }).catch((err)=>console.log(err));
-            
-        console.log(value);
-        navigate("/users")
+
+        } catch (errors) {
+            throw new Error('unable to create a new product')
+
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -97,7 +98,7 @@ const AddProduct = () => {
 
                         >
                             <TextField
-                                fullwidth
+                                fullWidth
                                 variant="filled"
                                 type="text"
                                 label="Name"
@@ -112,7 +113,7 @@ const AddProduct = () => {
                             />
 
                             <TextField
-                                fullwidth
+                                fullWidth
                                 variant="filled"
                                 type="text"
                                 label="Stock"
@@ -126,7 +127,7 @@ const AddProduct = () => {
 
                             />
                             <TextField
-                                fullwidth
+                                fullWidth
                                 variant="filled"
                                 type="text"
                                 label="Category"
@@ -140,20 +141,20 @@ const AddProduct = () => {
 
                             />
                             <TextField
-                                fullwidth
+                                fullWidth
                                 variant="filled"
                                 type="text"
                                 label="Quantity"
                                 onBlur={handleBlur}
                                 onChange={handleChange}
-                                value={values.address1}
+                                value={values.quantity}
                                 name="quantity"
                                 error={!!touched && !!errors.quantity}
                                 helperText={touched.quantity && errors.quantity}
                                 sx={{ gridColumn: "span 4" }}
                             />
                             <TextField
-                                fullwidth
+                                fullWidth
                                 variant="filled"
                                 type="text"
                                 label="Price"
@@ -167,14 +168,14 @@ const AddProduct = () => {
 
                             />
                             <TextField
-                                fullwidth
+                                fullWidth
                                 variant="filled"
                                 type="text"
                                 label="Description"
                                 onBlur={handleBlur}
                                 onChange={handleChange}
                                 value={values.description}
-                                name="description`"
+                                name="description"
                                 error={!!touched && !!errors.description}
                                 helperText={touched.description && errors.description}
                                 sx={{ gridColumn: "span 4" }}
@@ -188,8 +189,14 @@ const AddProduct = () => {
                         </Box>
 
                         <Box display="flex" justifyContent="end" mt="10px">
-
-                            <Button style={{ color: "inherit" }} type="submit" variant="contained" color="secondary" > Create Product</Button>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="secondary"
+                                disabled={loading}
+                            >
+                                {loading ? "Adding..." : "Create Product"}
+                            </Button>
                         </Box>
 
                     </form>

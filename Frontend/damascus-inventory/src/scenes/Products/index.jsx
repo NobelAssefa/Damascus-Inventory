@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import { Typography, Box, useTheme, Toolbar } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
@@ -9,19 +11,45 @@ import { tokens } from "../../theme";
 import { Link } from "react-router-dom";
 import Header from "../../components/Header";
 import { mockDataInvoices } from "../../Data/mockData";
+import { getAllProducts } from '../../config/apiCalls/productApiCall';
 const Products = () => {
     const theme = useTheme()
     const colors = tokens(theme.palette.mode);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const productData = await getAllProducts();
+                setProducts(productData);
+                console.log("Product Data..." + productData);
+
+            } catch (err) {
+                setError('Failed to fetch products');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
+
+    console.log(products);
+
     const columns = [
-        { field: "id", headerName: "ID" },
-        { field: "name", headerName: "Name", flex: 1, cellClassName: "name-column--cell" },
-        { field: "email", headerName: "Email", flex: 1 },
-        { field: "phone", headerName: "Phone Number", flex: 1 },
-        { field: "cost", headerName: "Cost", type: "number", headerAlign: "left", align: "left" },
-        { field: "date", headerName: "Date", flex: 1 },
+        { field: '_id', headerName: 'ID', width: 150 },
+        { field: 'name', headerName: 'Name', flex: 1, cellClassName: 'name-column--cell' },
+        { field: 'category', headerName: 'Category', flex: 1 },
+        { field: 'price', headerName: 'Price', type: 'number', flex: 1, headerAlign: 'left', align: 'left' },
+        { field: 'sku', headerName: 'SKU', flex: 1 },
         {
-            field: "status", headerName: "Status", flex: 1, headerAlign: "center", align: "left",
-            renderCell: ({ row: { status } }) => {
+            field: 'stock',
+            headerName: 'Stock',
+            flex: 1,
+            renderCell: ({ row: { stock } }) => {
+                const status = stock > 0 ? 'available' : 'outOfStock';
                 return (
                     <Box
                         width="60%"
@@ -29,31 +57,30 @@ const Products = () => {
                         p="5px"
                         display="flex"
                         justifyContent="center"
-
                         backgroundColor={
-                            status === "available"
+                            status === 'available'
                                 ? colors.greenAccent[700]
-                                : status === "outOfStock"
-                                    ? colors.redAccent[700]
-                                    : colors.greenAccent[700]
+                                : colors.redAccent[700]
                         }
                         borderRadius="4px"
                     >
-                        {status === "available" && <Inventory2OutlinedIcon />}
-
-                        {status === "outOfStock" && <RemoveShoppingCartOutlinedIcon />}
-                        <Typography color={colors.grey[100]} sx={{
-                            ml: "5px"
-                        }}>
+                        {status === 'available' && <Inventory2OutlinedIcon />}
+                        {status === 'outOfStock' && <RemoveShoppingCartOutlinedIcon />}
+                        <Typography color={colors.grey[100]} sx={{ ml: '5px' }}>
                             {status}
                         </Typography>
                     </Box>
-                )
-
-            }
+                );
+            },
         },
+       
+    ];
 
-    ]
+
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
+
     return (
         <Box m="20px">
             <Header title="Products" subtitle="Manage products" />
@@ -78,8 +105,8 @@ const Products = () => {
                         backgroundColor={colors.greenAccent[500]}
                         borderRadius="4px"
                     >
-                        <Typography fontSize = "large" color={colors.primary[500]}>Create Product</Typography>
-                        
+                        <Typography fontSize="large" color={colors.primary[500]}>Create Product</Typography>
+
                     </Box>
                 </Link>
             </Box>
@@ -121,10 +148,15 @@ const Products = () => {
                 }}
 
             >
-                <DataGrid checkboxselection rows={mockDataInvoices} columns={columns} slots={{ toolbar: GridToolbar }} />
+                <DataGrid
+                    checkboxselection
+                    rows={products}
+                    getRowId={(row) => row._id}
+                    columns={columns}
+                    slots={{ toolbar: GridToolbar }} />
 
 
-                
+
 
             </Box>
         </Box>
